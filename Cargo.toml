@@ -1,0 +1,18 @@
+[package]
+name = "opencv-blob"
+repository = "https://github.com/LdDl/opencv-blob-rust"
+readme = "README.md"
+keywords = ["opencv", "vision", "kalman", "tracking"]
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+authors = ["Dimitrii Lopanov <sexykdi@gmail.com>"]
+exclude = ["/.github", "/ci", "/tools", "release.toml", "rustfmt.toml"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+opencv = {version = "0.66"}
+nalgebra = "0.29.0" 
+uuid = { version = "0.8", features = ["serde", "v4"] }
+chrono = { version = "0.4", features = ["serde"] }
