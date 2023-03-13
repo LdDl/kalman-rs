@@ -2,7 +2,7 @@
 name = "kalman-rs"
 repository = "https://github.com/LdDl/kalman-rs"
 readme = "README.md"
-keywords = ["computer vision", "kalman", "tracking", "filtering"]
+keywords = ["computer-vision", "kalman", "tracking", "filtering"]
 license = "MIT"
 version = "0.1.0"
 edition = "2021"
