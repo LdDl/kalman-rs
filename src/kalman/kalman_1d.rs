@@ -1,6 +1,8 @@
 use std::fmt;
 use std::error::Error;
+use nalgebra;
 
+// Error struct for failed `nalgebra` operations
 #[derive(Debug)]
 pub struct Kalman1DError{typ: u16}
 impl fmt::Display for Kalman1DError {
@@ -13,18 +15,14 @@ impl fmt::Display for Kalman1DError {
 }
 impl Error for Kalman1DError {}
 
-// const I: nalgebra::SMatrix::<f32, 2, 2> = nalgebra::SMatrix::<f32, 2, 2>::identity();
+
+// Identity matrix. See the ref. https://en.wikipedia.org/wiki/Identity_matrix
 const I: nalgebra::SMatrix::<f32, 2, 2> = nalgebra::SMatrix::<f32, 2, 2>::new(
     1.0, 0.0,
     0.0, 1.0,
 );
 
-use nalgebra;
-// let y = z - (self.H*self.x);
-// let s = self.H*self.P*self.H.transpose() + self.R;
-// let k = self.P*self.H.transpose()*s.try_inverse().unwrap();
-// self.x = self.x + k*y;
-// self.P = (nalgebra::SMatrix::<f32, 2, 2>::identity() - k*self.H)*self.P;
+/// Implementation of Discrete Kalman filter for case when there is only on variable X.
 #[derive(Debug)]
 pub struct Kalman1D {
     // Single cycle time
@@ -52,6 +50,17 @@ pub struct Kalman1D {
 }
 
 impl Kalman1D {
+    /// Creates new `Kalman1D`
+    /// 
+    /// Basic usage:
+    /// 
+    /// ```
+    /// let dt = 0.1; // Single cycle time
+    /// let u = 2.0; // Control input
+    /// let std_dev_a = 0.25; // Standart deviation of acceleration
+    /// let std_dev_m = 1.2; // Standart deviation of measurement
+    /// let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
+    /// ```
     pub fn new(dt: f32, u: f32, std_dev_a: f32, std_dev_m: f32) -> Self {
         Kalman1D {
             dt,
@@ -91,12 +100,37 @@ impl Kalman1D {
             ),
         }
     }
+    /// Projects the state and the error covariance ahead
+    /// Mutates the state vector and the error covariance matrix
+    /// 
+    /// Basic usage:
+    /// 
+    /// ```
+    /// let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
+    /// for x in measurements {
+    ///     // get measurement
+    ///     kalman.predict();
+    ///     // then do update 
+    /// }
+    /// ```
     pub fn predict(&mut self) {
         // Ref.: Eq.(5)
         self.x = (self.A*self.x) + (self.B*self.u);
         // Ref.: Eq.(6)
         self.P = self.A*self.P*self.A.transpose() + self.Q;
     }
+    /// Computes the Kalman gain and then updates the state vector and the error covariance matrix
+    /// Mutates the state vector and the error covariance matrix.
+    /// 
+    /// Basic usage:
+    /// 
+    /// ```
+    /// let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
+    /// for x in measurements {
+    ///     kalman.predict();
+    ///     kalman.update(x).unwrap(); // assuming that there is noise in measurement
+    /// }
+    /// ```
     pub fn update(&mut self, _z: f32) -> Result<(), Kalman1DError> {
         // Ref.: Eq.(7)
         let gain = match (self.H*self.P*self.H.transpose() + self.R).try_inverse() {
