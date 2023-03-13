@@ -1,5 +1,5 @@
 [package]
-name = "kalman-rs"
+name = "kalman-rust"
 repository = "https://github.com/LdDl/kalman-rs"
 readme = "README.md"
 keywords = ["computer-vision", "kalman", "tracking", "filtering"]
