@@ -19,7 +19,7 @@ Let's denote variables:
 
 * $A$ (sometimes it's written as $F$, but I prefer to stick with $A$) - [Transition matrix](https://en.wikipedia.org/wiki/State-transition_matrix) of size $n \times n$ relating state $k-1$ to state $k$
 * $B$ - Control input matrix of size $n \times l$ which is applied to *optional* control input $u_{k-1}$
-* $H$ - Transformation matrix of size $m \times n$
+* $H$ - Transformation (observation) matrix of size $m \times n$.
 * $u_{k}$ - Control input
 * $w_{k}$ - Process noise vector with covariance $Q$. Gaussian noise with the normal probability distribution:
 $$ w(t) \sim N(0, Q) \tag{3} $$
@@ -37,9 +37,9 @@ $$\text{, where $\hat{x}^-_{k}$ - a priory state (a.k.a. predicted),  $\hat{x}_{
 
 __Note: A posteriory state $\hat{x}_{k-1}$ on 0-th time step (initial) should be *guessed*__
 
-Error covariance matrix is defined as
+Error covariance matrix $P^-$ is defined as
 $$P^-_{k} =  A⋅P_{k-1}⋅A^{T} + Q \tag{6}$$
-$$\text{, where $P_{k-1}$ - previously estimated error covariance matrix, Q - process noise covariance}$$
+$$\text{, where $P_{k-1}$ - previously estimated error covariance matrix of size $n \times n$ (should match transition matrix dimensions), Q - process noise covariance}$$
 
 __Note: $P_{k-1}$ on 0-th time step (initial) should be *guessed*__
 
@@ -48,7 +48,7 @@ __Note: $P_{k-1}$ on 0-th time step (initial) should be *guessed*__
 The Kalman gain (which minimizes the estimate variance) in matrix notation is defined as:
 $$K_{k} = P^-_{k}⋅H^{T}⋅(H⋅P^-_{k}⋅H^{T}+R)^{-1} \tag{7}$$
 
-$$\text{, where H - observation matrix, R - measurement noise covariance}$$
+$$\text{, where H - transformation matrix, R - measurement noise covariance}$$
 
 After evaluating the Kalman gain we need to update a priory state $\hat{x}^-_{k}$. In order to do that we need to calculate measurement residual:
 $$r_{k} = z_{k} - H⋅\hat{x}^-_{k} \tag{8}$$
@@ -73,7 +73,98 @@ The whole algorithm can be described as high-level diagram:
 </p>
 
 ## 1-D Kalman filter
-@todo: physical model / text / code / plots
+
+Considering acceleration motion let's write down its equations:
+
+Velocity:
+$$v = v_{0} + at \tag{11}$$
+$$v(t) = x'(t) $$
+$$a(t) = v'(t) = x''(t)$$
+
+Position:
+$$x = x_{0} + v_{0}t + \frac{at^2}{2} \tag{12}$$
+
+Let's write $(11)$ and $(12)$ in Lagrange form:
+
+$$x'_{k} = x'_{k-1} + x''_{k-1}t \tag{13}$$
+$$x_{k} = x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \tag{14}$$
+
+State vector $x_{k}$ looks like:
+
+$$x_{k} = \begin{bmatrix} x_{k} \\ x'_{k} \end{bmatrix} = \begin{bmatrix} x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \\ x'_{k-1} + x''_{k-1}t \end{bmatrix} \tag{15}$$
+
+Matrix form of $x_{k}$:
+$$x_{k} = \begin{bmatrix} x_{k} \\ x'_{k} \end{bmatrix} = \begin{bmatrix} 1 & \Delta t \\ 0 & 1\end{bmatrix} ⋅ \begin{bmatrix} x_{k-1} \\ x'_{k-1} \end{bmatrix} + \begin{bmatrix} \frac{\Delta t^2}{2} \\ \Delta t \end{bmatrix} ⋅ x''_{k-1} = \begin{bmatrix} x_{k} \\ x'_{k} \end{bmatrix} = \begin{bmatrix} 1 & \Delta t \\ 0 & 1\end{bmatrix} ⋅ x_{k-1} + \begin{bmatrix} \frac{\Delta t^2}{2} \\ \Delta t \end{bmatrix} ⋅ x''_{k-1} \tag{16}$$
+
+
+Taking close look on $(16)$ and $(1)$ we can write transition matrix $A$ and control input matrix $B$ as follows:
+$$A = \begin{bmatrix} 1 & \Delta t \\ 0 & 1\end{bmatrix} \tag{17}$$
+$$B = \begin{bmatrix} \frac{\Delta t^2}{2} \\ \Delta t \end{bmatrix} \tag{18}$$
+
+Let's find transformation matrix $H$. According to $(2)$:
+
+$$z_{k} = H⋅x_{k} + v_{k} = \begin{bmatrix} 1 & 0 \end{bmatrix} ⋅\begin{bmatrix} x_{k} \\ {x'_{k}} \end{bmatrix} + v_{k} \tag{19}$$
+$$ H = \begin{bmatrix} 1 & 0 \end{bmatrix} \tag{20}$$
+
+__Notice: $v_{k}$ in $(19)$- is not speed, but measurement noise! Don't be confused with notation. E.g.:__ 
+
+$$ \text{$ x_{k} = \begin{bmatrix} 375.74 \\ 0 - \text{assume zero velocity}  \end{bmatrix} $, $ v_{k} = 2.64 => $} $$
+$$ \text{$ => z_{k} = \begin{bmatrix} 1 & 0 \end{bmatrix} ⋅\begin{bmatrix} 375.74 \\ 0 \end{bmatrix} + 2.64 = \begin{bmatrix} 378.38 & 2.64 \end{bmatrix} $ - you can see that first vector argument it is just noise $v_{k}$ added to observation $x_{k}$ and the second argument is noise $v_{k}$ itself.}$$
+
+Process noise covariance matrix $Q$:
+$$ Q = \begin{bmatrix} \sigma^2_{x} & \sigma_{x} \sigma_{x'} \\ \sigma_{x'} \sigma_{x} & \sigma^2_{x'}\end{bmatrix} \tag{21}$$
+$$\text{, where} $$
+$$ \text{$\sigma_{x}$ - standart deviation of position} $$
+$$ \text{$\sigma_{x'}$ - standart deviation of velocity} $$
+
+Since we know about $(14)$ we can define $\sigma_{x}$ and $\sigma_{x'}$ as:
+$$ \sigma_{x} = \sigma_{x''} \frac{\Delta t^2}{2} \tag{22}$$
+$$ \sigma_{x'} = \sigma_{x''} \Delta t \tag{23}$$
+$$\text{, where $\sigma_{x''}$ - standart deviation of acceleration (tuned value)} $$
+
+And now process noise covariance matrix $Q$ could be defined as:
+$$ Q = \begin{bmatrix} (\sigma_{x''} \frac{\Delta t^2}{2})^2 & \sigma_{x''} \frac{\Delta t^2}{2} \sigma_{x''} \Delta t  \\ \sigma_{x''} \Delta t \sigma_{x''} \frac{\Delta t^2}{2} & (\sigma_{x''} \Delta t)^2 \end{bmatrix} = \begin{bmatrix} (\sigma_{x''} \frac{\Delta t^2}{2})^2 & (\sigma_{x''})^2 \frac{\Delta t^2}{2} \Delta t  \\ (\sigma_{x''})^2 \Delta t \frac{\Delta t^2}{2} & (\sigma_{x''} \Delta t)^2 \end{bmatrix} = \begin{bmatrix} (\frac{\Delta t^2}{2})^2 & \frac{\Delta t^2}{2} \Delta t  \\ \Delta t \frac{\Delta t^2}{2} & \Delta t^2 \end{bmatrix} \sigma^2_{x''} = \begin{bmatrix} \frac{\Delta t^4}{4} & \frac{\Delta t^3}{2} \\ \frac{\Delta t^3}{2} & \Delta t^2 \end{bmatrix} \sigma^2_{x''} \tag{24}$$
+
+Covariance of measurement noise $R$ is scalar (matrix of size $1 \times 1$) and it is defined as variance of the measurement noise:
+$$ R = \sigma^2_{z}\tag{25}$$
+
+Rust implementation is [here](./src/kalman/kalman_1d.rs#L4)
+
+Example of usage:
+```rust
+    let dt = 0.1;
+    let u = 2.0;
+    let std_dev_a = 0.25;
+    let std_dev_m = 1.2;
+
+    let t: nalgebra::SVector::<f32, 1000> = nalgebra::SVector::<f32, 1000>::from_iterator(float_loop(0.0, 100.0, dt));
+    let track = t.map(|t| dt*(t*t - t));
+
+
+    let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
+    let mut measurement: Vec<f32> = vec![];
+    let mut predictions: Vec<f32>= vec![];
+    for (t, x) in t.iter().zip(track.iter()) {
+        // Add some noise to perfect track
+        let v: f32 = StdRng::from_entropy().sample::<f32, Standard>(Standard) * (50.0+50.0) - 50.0; // Generate noise in [-50, 50)
+        let z = kalman.H.x * x + v;
+        measurement.push(z);
+
+        // Predict stage
+        kalman.predict();
+        predictions.push(kalman.x.x);
+
+        // Update stage
+        kalman.update(z).unwrap();
+    }
+    println!("time;perfect;measurement;prediction");
+    for i in 0..track.len() {
+        println!("{};{};{};{}", t[i], track[i], measurement[i], predictions[i]);
+    }
+```
+
+How exported chart does look like:
+<img src="images/kalman-1d.png" width="720">
 
 ## 2-D Kalman filter
 @todo: physical model / text / code / plots
@@ -83,3 +174,4 @@ The whole algorithm can be described as high-level diagram:
 * [Introducion to the Kalman Filter by Alex Becker](https://www.kalmanfilter.net/default.aspx)
 * [Kalman filter on wikipedia](https://en.wikipedia.org/wiki/Kalman_filter)
 * [State-transition matrix](https://en.wikipedia.org/wiki/State-transition_matrix)
+* [Python implementation by Rahmad Sadli](https://machinelearningspace.com/object-tracking-python/)

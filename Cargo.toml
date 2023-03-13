@@ -1,8 +1,8 @@
 [package]
-name = "opencv-blob"
-repository = "https://github.com/LdDl/opencv-blob-rust"
+name = "kalman-rs"
+repository = "https://github.com/LdDl/kalman-rs"
 readme = "README.md"
-keywords = ["opencv", "vision", "kalman", "tracking"]
+keywords = ["computer vision", "kalman", "tracking", "filtering"]
 license = "MIT"
 version = "0.1.0"
 edition = "2021"
@@ -13,6 +13,7 @@ exclude = ["/.github", "/ci", "/tools", "release.toml", "rustfmt.toml"]
 
 [dependencies]
 opencv = {version = "0.66"}
-nalgebra = "0.29.0" 
+nalgebra = "0.32.1" 
 uuid = { version = "0.8", features = ["serde", "v4"] }
 chrono = { version = "0.4", features = ["serde"] }
+rand = { version = "0.8" }

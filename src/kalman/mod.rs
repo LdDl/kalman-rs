@@ -1,5 +1,5 @@
-mod kalman_linear;
+mod kalman_1d;
 
 pub use self::{
-    kalman_linear::*
+    kalman_1d::*
 };

@@ -1,2 +1,5 @@
 /target
 /Cargo.lock
+images/*.ods
+bash_scripts/*.ps1
+bash_scripts/*.py
