@@ -42,7 +42,8 @@ Error covariance matrix $P^-$ is defined as
 
 $$P^-_{k} =  A⋅P_{k-1}⋅A^{T} + Q \tag{6}$$
 
-$$\text{, where $P_{k-1}$ - previously estimated error covariance matrix of size $n \times n$ (should match transition matrix dimensions), Q - process noise covariance}$$
+$$\text{, where $P_{k-1}$ - previously estimated error covariance matrix of size $n \times n$ (should match transition matrix dimensions), } $$
+$$\text{Q - process noise covariance}$$
 
 __Note:__ $P_{k-1}$ __on 0-th time step (initial) should be *guessed*__
 
@@ -140,9 +141,9 @@ $$ \text{$ \chi_{k} = \begin{bmatrix} 375.74 \\
 0 - \text{assume zero velocity}  \end{bmatrix} $, $ v_{k} = 2.64 => $} $$
 
 $$ \text{$ => z_{k} = \begin{bmatrix} 1 & 0 \end{bmatrix} ⋅\begin{bmatrix} 375.74 \\
-0 \end{bmatrix} + 2.64 = \begin{bmatrix} 378.38 & 2.64 \end{bmatrix} $ - you can see that first vector argument it is just noise $v_{k}$ added to observation $x_{k}$}$$
+0 \end{bmatrix} + 2.64 = \begin{bmatrix} 378.38 & 2.64 \end{bmatrix} $ - you can see that first vector argument it is just noise $v_{k}$ added}$$
 
-$$ \text{and the second argument is noise $v_{k}$ itself.}$$
+$$ \text{to observation $x_{k}$ and the second argument is noise $v_{k}$ itself.}$$
 
 Process noise covariance matrix $Q$:
 
@@ -267,7 +268,8 @@ y'_{k-1} \end{bmatrix} + \begin{bmatrix} \frac{\Delta t^2}{2} & 0 \\
 0 & \frac{\Delta t^2}{2} \\
 \Delta t & 0 \\
 0 & \Delta t \end{bmatrix} ⋅ \begin{bmatrix} x''_{k-1} \\
-y''_{k-1} \end{bmatrix} = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\
+y''_{k-1} \end{bmatrix} = $$
+$$ = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\
 0 & 1 & 0 & \Delta t \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1 \end{bmatrix} ⋅ \chi_{k-1} + \begin{bmatrix} \frac{\Delta t^2}{2} & 0 \\
