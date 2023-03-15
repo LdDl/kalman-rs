@@ -109,7 +109,7 @@ x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \\
 x'_{k-1} + x''_{k-1}\Delta t
 \end{bmatrix} \tag{15}$$
 
-Matrix form of $\chi_{k}$:
+Matrix form of $\chi_{k}$ :
 
 $$\chi_{k} = \begin{bmatrix} x_{k} \\
 x'_{k} \end{bmatrix} = \begin{bmatrix} 1 & \Delta t \\
@@ -239,7 +239,7 @@ __W.I.P.__
 
 Considering acceleration motion again let's write down its equations:
 
-Considering the same physical model as in $(13)$-$(14)$ let's write down state vector $\chi_{k}$:
+Considering the same physical model as in $(13)$ - $(14)$ let's write down state vector $\chi_{k}$:
 
 $$\chi_{k} = \begin{bmatrix}
 x_{k} \\
@@ -252,7 +252,7 @@ x'_{k-1} + x''_{k-1}\Delta t \\
 y'_{k-1} + y''_{k-1}\Delta t
 \end{bmatrix} \tag{27}$$
 
-Matrix form of $\chi_{k}$:
+Matrix form of $\chi_{k}$ :
 
 $$\chi_{k} = \begin{bmatrix} x_{k} \\
 y_{k} \\
@@ -308,7 +308,7 @@ $$B = \begin{bmatrix} \frac{\Delta t^2}{2} & 0 \\
 \Delta t & 0 \\
 0 & \Delta t \end{bmatrix} \tag{32}$$
 
-Let's find transformation matrix $H$. According to $(2)$ and $(19)$-$(20)$:
+Let's find transformation matrix $H$. According to $(2)$ and $(19)$ - $(20)$:
 
 $$z_{k} = H⋅\chi_{k} + v_{k} = \begin{bmatrix} 1 & 0 & 0 & 0 \\
 0 & 1 & 0 & 0 \end{bmatrix} ⋅\begin{bmatrix} x_{k} \\
