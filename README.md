@@ -146,8 +146,14 @@ $$ \text{and the second argument is noise $v_{k}$ itself.}$$
 
 Process noise covariance matrix $Q$:
 
-$$ Q = \begin{bmatrix} \sigma^2_{x} & \sigma_{x} \sigma_{x'} \\
-\sigma_{x'} \sigma_{x} & \sigma^2_{x'}\end{bmatrix} \tag{21}$$
+$$Q = \begin{matrix}
+ & \begin{matrix}x && x'\end{matrix} \\
+\begin{matrix}x \\
+x'\end{matrix} & 
+  \begin{bmatrix} \sigma^2_{x} & \sigma_{x} \sigma_{x'} \\
+\sigma_{x'} \sigma_{x} & \sigma^2_{x'}\end{bmatrix}
+ \\\\
+\end{matrix} \tag{21}$$
 
 $$\text{, where} $$
 
@@ -175,9 +181,17 @@ $$ = \begin{bmatrix} (\sigma_{x''} \frac{\Delta t^2}{2})^2 & (\sigma_{x''})^2 \f
 $$ = \begin{bmatrix} \frac{\Delta t^4}{4} & \frac{\Delta t^3}{2} \\
 \frac{\Delta t^3}{2} & \Delta t^2 \end{bmatrix} \sigma^2_{x''} \tag{24}$$
 
+$$ \text{Assuming that $x''$ - is acceleration $a$, $Q = \begin{bmatrix} \frac{\Delta t^4}{4} & \frac{\Delta t^3}{2} \\
+\frac{\Delta t^3}{2} & \Delta t^2 \end{bmatrix} \sigma^2_{a}$} \tag{25}$$
+
 Covariance of measurement noise $R$ is scalar (matrix of size $1 \times 1$) and it is defined as variance of the measurement noise:
 
-$$ R = \sigma^2_{z}\tag{25}$$
+$$R = \begin{matrix}
+\begin{matrix}& x\end{matrix} \\
+\begin{matrix}x\end{matrix}
+  \begin{bmatrix}\sigma^2_{z}\end{bmatrix}
+ \\\\
+\end{matrix} = \sigma^2_{z} \tag{26}$$
 
 Rust implementation is [here](./src/kalman/kalman_1d.rs#L4)
 
