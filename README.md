@@ -94,7 +94,7 @@ $$x = x_{0} + v_{0}t + \frac{at^2}{2} \tag{12}$$
 
 Let's write $(11)$ and $(12)$ in Lagrange form:
 
-$$x'_{k} = x'_{k-1} + x''_{k-1}t \tag{13}$$
+$$x'_{k} = x'_{k-1} + x''_{k-1}\Delta t \tag{13}$$
 
 $$x_{k} = x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \tag{14}$$
 
@@ -105,7 +105,7 @@ x_{k} \\
 x'_{k}
 \end{bmatrix} = \begin{bmatrix}
 x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \\
-x'_{k-1} + x''_{k-1}t
+x'_{k-1} + x''_{k-1}\Delta t
 \end{bmatrix} \tag{15}$$
 
 Matrix form of $x_{k}$:
