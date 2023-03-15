@@ -10,10 +10,10 @@ In this repository Hybrid Kalman filter is implemented considering continuous-ti
 
 Define mentioned _linear stochastic difference equation_:
 
-$$x_{k} = A⋅x_{k-1} + B⋅u_{k-1} + w_{k-1} \tag{1}$$
+$$\chi_{k} = A⋅\chi_{k-1} + B⋅u_{k-1} + w_{k-1} \tag{1}$$
 
 Define measurement model:
-$$z_{k} = H⋅x_{k} + v_{k}\tag{2}$$
+$$z_{k} = H⋅\chi_{k} + v_{k}\tag{2}$$
 
 Let's denote variables:
 
@@ -32,11 +32,11 @@ Let's use the dash sign " $-$ " as superscript to indicate the a priory state.
 
 A priory state in matrix notation is defined as
 
-$$\hat{x}^-_{k} = A⋅\hat{x}_{k-1} + B⋅u_{k-1} \tag{5}$$
+$$\hat{\chi}^-_{k} = A⋅\hat{\chi}_{k-1} + B⋅u_{k-1} \tag{5}$$
 
-$$\text{, where $\hat{x}^-_{k}$ - a priory state (a.k.a. predicted),  $\hat{x}_{k-1}$ - a posteriory state (a.k.a. previous)} $$
+$$\text{, where $\hat{\chi}^-_{k}$ - a priory state (a.k.a. predicted),  $\hat{\chi}_{k-1}$ - a posteriory state (a.k.a. previous)} $$
 
-__Note: A posteriory state $\hat{x}_{k-1}$ on 0-th time step (initial) should be *guessed*__
+__Note: A posteriory state $\hat{\chi}_{k-1}$ on 0-th time step (initial) should be *guessed*__
 
 Error covariance matrix $P^-$ is defined as
 
@@ -54,19 +54,19 @@ $$K_{k} = P^-_{k}⋅H^{T}⋅(H⋅P^-_{k}⋅H^{T}+R)^{-1} \tag{7}$$
 
 $$\text{, where H - transformation matrix, R - measurement noise covariance}$$
 
-After evaluating the Kalman gain we need to update a priory state $\hat{x}^-_{k}$. In order to do that we need to calculate measurement residual:
+After evaluating the Kalman gain we need to update a priory state $\hat{\chi}^-_{k}$. In order to do that we need to calculate measurement residual:
 
-$$r_{k} = z_{k} - H⋅\hat{x}^-_{k} \tag{8}$$
+$$r_{k} = z_{k} - H⋅\hat{\chi}^-_{k} \tag{8}$$
 
-$$\text{, where $z_{k}$ - true measurement, $H⋅\hat{x}^-_{k}$ - previously estimated measurement}$$
+$$\text{, where $z_{k}$ - true measurement, $H⋅\hat{\chi}^-_{k}$ - previously estimated measurement}$$
 
-Then we can update predicted state $\hat{x}_{k}$:
+Then we can update predicted state $\hat{\chi}_{k}$:
 
-$$\hat{x}_{k} = \hat{x}^-_{k} + K_{k}⋅r_{k}$$
+$$\hat{\chi}_{k} = \hat{\chi}^-_{k} + K_{k}⋅r_{k}$$
 
 $$\text{or} \tag{9}$$
 
-$$\hat{x}_{k} = \hat{x}^-_{k} + K_{k}⋅(z_{k} - H⋅\hat{x}^-_{k})$$
+$$\hat{\chi}_{k} = \hat{\chi}^-_{k} + K_{k}⋅(z_{k} - H⋅\hat{\chi}^-_{k})$$
 
 After that we should update error covariance matrix $P_{k}$ which will be used in next time stap (an so on):
 $$P_{k} = (I - K_{k}⋅H)⋅P^-_{k}\tag{10}$$
@@ -98,9 +98,9 @@ $$x'_{k} = x'_{k-1} + x''_{k-1}\Delta t \tag{13}$$
 
 $$x_{k} = x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \tag{14}$$
 
-State vector $x_{k}$ looks like:
+State vector $\chi_{k}$ looks like:
 
-$$x_{k} = \begin{bmatrix}
+$$\chi_{k} = \begin{bmatrix}
 x_{k} \\
 x'_{k}
 \end{bmatrix} = \begin{bmatrix}
@@ -108,14 +108,14 @@ x_{k-1} + x'_{k-1}\Delta t + \frac{x''_{k-1}(\Delta t^2)}{2} \\
 x'_{k-1} + x''_{k-1}\Delta t
 \end{bmatrix} \tag{15}$$
 
-Matrix form of $x_{k}$:
+Matrix form of $\chi_{k}$:
 
-$$x_{k} = \begin{bmatrix} x_{k} \\
+$$\chi_{k} = \begin{bmatrix} x_{k} \\
 x'_{k} \end{bmatrix} = \begin{bmatrix} 1 & \Delta t \\
 0 & 1\end{bmatrix} ⋅ \begin{bmatrix} x_{k-1} \\
 x'_{k-1} \end{bmatrix} + \begin{bmatrix} \frac{\Delta t^2}{2} \\
 \Delta t \end{bmatrix} ⋅ x''_{k-1} = \begin{bmatrix} 1 & \Delta t \\
-0 & 1\end{bmatrix} ⋅ x_{k-1} + \begin{bmatrix} \frac{\Delta t^2}{2} \\
+0 & 1\end{bmatrix} ⋅ \chi_{k-1} + \begin{bmatrix} \frac{\Delta t^2}{2} \\
 \Delta t \end{bmatrix} ⋅ x''_{k-1} \tag{16}$$
 
 
@@ -129,14 +129,14 @@ $$B = \begin{bmatrix} \frac{\Delta t^2}{2} \\
 
 Let's find transformation matrix $H$. According to $(2)$:
 
-$$z_{k} = H⋅x_{k} + v_{k} = \begin{bmatrix} 1 & 0 \end{bmatrix} ⋅\begin{bmatrix} x_{k} \\
+$$z_{k} = H⋅\chi_{k} + v_{k} = \begin{bmatrix} 1 & 0 \end{bmatrix} ⋅\begin{bmatrix} x_{k} \\
 {x'_{k}} \end{bmatrix} + v_{k} \tag{19}$$
 
 $$ H = \begin{bmatrix} 1 & 0 \end{bmatrix} \tag{20}$$
 
 __Notice:__ $v_{k}$ __in__ $(19)$ __- is not speed, but measurement noise! Don't be confused with notation. E.g.:__ 
 
-$$ \text{$ x_{k} = \begin{bmatrix} 375.74 \\
+$$ \text{$ \chi_{k} = \begin{bmatrix} 375.74 \\
 0 - \text{assume zero velocity}  \end{bmatrix} $, $ v_{k} = 2.64 => $} $$
 
 $$ \text{$ => z_{k} = \begin{bmatrix} 1 & 0 \end{bmatrix} ⋅\begin{bmatrix} 375.74 \\
