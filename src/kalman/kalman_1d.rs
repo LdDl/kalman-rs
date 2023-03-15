@@ -81,12 +81,12 @@ impl Kalman1D {
             H: nalgebra::SMatrix::<f32, 1, 2>::new(
                 1.0, 0.0,
             ),
-            // Ref.: Eq.(24)
+            // Ref.: Eq.(25)
             Q: nalgebra::SMatrix::<f32, 2, 2>::new(
                 0.25 * dt.powi(4), 0.5 * dt.powi(3),
                 0.5 * dt.powi(3), dt.powi(2),
             )*std_dev_a.powi(2),
-            // Ref.: Eq.(25)
+            // Ref.: Eq.(26)
             R: nalgebra::SMatrix::<f32, 1, 1>::new(
                 std_dev_m.powi(2),
             ),
