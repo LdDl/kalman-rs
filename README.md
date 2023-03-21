@@ -389,7 +389,8 @@ y \end{matrix}
 \end{matrix} = \begin{bmatrix}\sigma^2_{x} & 0 \\
   0 & \sigma^2_{y} \end{bmatrix} \tag{41}$$
 
-@todo: rust code / plots
+Rust implementation is [here](./src/kalman/kalman_2d.rs#L4)
+@todo: code snippet / plots
 
 # Refrences
 * [Greg Welch and Gary Bishop, ‘An Introduction to the Kalman Filter’, July 24, 2006](https://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf)

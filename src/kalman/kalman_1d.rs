@@ -45,7 +45,7 @@ pub struct Kalman1D {
     R: nalgebra::SMatrix<f32, 1, 1>,
     // Error covariance matrix
     P: nalgebra::SMatrix<f32, 2, 2>,
-    // State vector
+    // State vector: x, vx
     x: nalgebra::SVector<f32, 2>,
 }
 
