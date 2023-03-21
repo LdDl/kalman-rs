@@ -390,7 +390,41 @@ y \end{matrix}
   0 & \sigma^2_{y} \end{bmatrix} \tag{41}$$
 
 Rust implementation is [here](./src/kalman/kalman_2d.rs#L4)
-@todo: code snippet / plots
+
+Example of usage:
+```rust
+    let dt = 0.04; // 1/25 = 25 fps - just an example
+    let ux = 1.0;
+    let uy = 1.0;
+    let std_dev_a = 2.0;
+    let std_dev_mx = 0.1;
+    let std_dev_my = 0.1;
+
+    // Sample measurements
+    // Note: in this example Y-axis going from up to down
+    let xs = vec![311, 312, 313, 311, 311, 312, 312, 313, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 311, 311, 311, 311, 311, 310, 311, 311, 311, 310, 310, 308, 307, 308, 308, 308, 307, 307, 307, 308, 307, 307, 307, 307, 307, 308, 307, 309, 306, 307, 306, 307, 308, 306, 306, 306, 305, 307, 307, 307, 306, 306, 306, 307, 307, 308, 307, 307, 308, 307, 306, 308, 309, 309, 309, 309, 308, 309, 309, 309, 308, 311, 311, 307, 311, 307, 313, 311, 307, 311, 311, 306, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312];
+    let ys = vec![5, 6, 8, 10, 11, 12, 12, 13, 16, 16, 18, 18, 19, 19, 20, 20, 22, 22, 23, 23, 24, 24, 28, 30, 32, 35, 39, 42, 44, 46, 56, 58, 70, 60, 52, 64, 51, 70, 70, 70, 66, 83, 80, 85, 80, 98, 79, 98, 61, 94, 101, 94, 104, 94, 107, 112, 108, 108, 109, 109, 121, 108, 108, 120, 122, 122, 128, 130, 122, 140, 122, 122, 140, 122, 134, 141, 136, 136, 154, 155, 155, 150, 161, 162, 169, 171, 181, 175, 175, 163, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178];
+    
+    let mut kalman = Kalman2D::new(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my);
+    let mut predictions: Vec<Vec<f32>> = vec![];
+    for (x, y) in xs.iter().zip(ys.iter()) {
+        // Considering that the measurements are noisy
+        let mx = *x as f32;
+        let my = *y as f32;
+
+        // Predict stage
+        kalman.predict();
+        predictions.push(vec![kalman.x.x, kalman.x.y]);
+
+        // Update stage
+        kalman.update(mx, my).unwrap();
+    }
+    println!("measurement X;measurement Y;prediction X;prediction Y");
+    for i in 0..xs.len() {
+        println!("{};{};{};{}", xs[i], ys[i], predictions[i][0], predictions[i][1]);
+    }
+```
+@todo: plots
 
 # Refrences
 * [Greg Welch and Gary Bishop, ‘An Introduction to the Kalman Filter’, July 24, 2006](https://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf)
