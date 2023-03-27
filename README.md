@@ -431,7 +431,7 @@ How exported chart does look like:
 <img src="images/kalman-2d.png" width="720">
 
 
-## 2-D Kalman filter (with acceleration component)
+## 2-D Kalman filter (with acceleration component and no control input)
 
 __W.I.P.__
 
