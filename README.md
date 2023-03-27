@@ -235,8 +235,6 @@ How exported chart does look like:
 
 ## 2-D Kalman filter
 
-__W.I.P.__
-
 Considering acceleration motion again let's write down its equations:
 
 Considering the same physical model as in $(13)$ - $(14)$ let's write down state vector $\chi_{k}$:
@@ -432,6 +430,14 @@ How exported chart does look like:
 
 <img src="images/kalman-2d.png" width="720">
 
+
+## 2-D Kalman filter (with acceleration component)
+
+__W.I.P.__
+
+@todo: math-jax / rust code / rust test / plots
+
+### 
 # Refrences
 * [Greg Welch and Gary Bishop, ‘An Introduction to the Kalman Filter’, July 24, 2006](https://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf)
 * [Introducion to the Kalman Filter by Alex Becker](https://www.kalmanfilter.net/default.aspx)
