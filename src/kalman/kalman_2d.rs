@@ -147,10 +147,10 @@ impl Kalman2D {
     /// Basic usage:
     /// 
     /// ```
-    /// let mut kalman = Kalman2D::new(dt, ux, uy, std_dev_a, std_dev_m);
-    /// for m in measurements {
+    /// let mut kalman = Kalman2D::new(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my)
+    /// for (mx, my) in measurements.iter() {
     ///     kalman.predict();
-    ///     kalman.update(m).unwrap(); // assuming that there is noise in measurement
+    ///     kalman.update(mx, my).unwrap(); // assuming that there is noise in measurement
     /// }
     /// ```
     pub fn update(&mut self, _zx: f32, _zy: f32) -> Result<(), Kalman2DError> {
@@ -208,7 +208,7 @@ mod tests {
             // Update stage
             kalman.update(mx, my).unwrap();
         }
-        
+
         // println!("measurement X;measurement Y;prediction X;prediction Y");
         // for i in 0..xs.len() {
         //     println!("{};{};{};{}", xs[i], ys[i], predictions[i][0], predictions[i][1]);
