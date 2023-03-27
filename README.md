@@ -406,6 +406,9 @@ Example of usage:
     let ys = vec![5, 6, 8, 10, 11, 12, 12, 13, 16, 16, 18, 18, 19, 19, 20, 20, 22, 22, 23, 23, 24, 24, 28, 30, 32, 35, 39, 42, 44, 46, 56, 58, 70, 60, 52, 64, 51, 70, 70, 70, 66, 83, 80, 85, 80, 98, 79, 98, 61, 94, 101, 94, 104, 94, 107, 112, 108, 108, 109, 109, 121, 108, 108, 120, 122, 122, 128, 130, 122, 140, 122, 122, 140, 122, 134, 141, 136, 136, 154, 155, 155, 150, 161, 162, 169, 171, 181, 175, 175, 163, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178];
     
     let mut kalman = Kalman2D::new(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my);
+    // Assume that initial X,Y coordinates match the first measurement
+    kalman.x.x = xs[0] as f32;
+    kalman.x.y = ys[0] as f32;
     let mut predictions: Vec<Vec<f32>> = vec![];
     for (x, y) in xs.iter().zip(ys.iter()) {
         // Considering that the measurements are noisy
@@ -424,7 +427,10 @@ Example of usage:
         println!("{};{};{};{}", xs[i], ys[i], predictions[i][0], predictions[i][1]);
     }
 ```
-@todo: plots
+
+How exported chart does look like:
+
+<img src="images/kalman-2d.png" width="720">
 
 # Refrences
 * [Greg Welch and Gary Bishop, ‘An Introduction to the Kalman Filter’, July 24, 2006](https://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf)
