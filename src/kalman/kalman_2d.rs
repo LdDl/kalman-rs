@@ -196,6 +196,7 @@ mod tests {
         kalman.x.x = xs[0] as f32;
         kalman.x.y = ys[0] as f32;
         let mut predictions: Vec<Vec<f32>> = vec![];
+        let mut updated_states: Vec<Vec<f32>> = vec![];
         for (x, y) in xs.iter().zip(ys.iter()) {
             // Considering that the measurements are noisy
             let mx = *x as f32;
@@ -207,11 +208,12 @@ mod tests {
 
             // Update stage
             kalman.update(mx, my).unwrap();
+            updated_states.push(vec![kalman.x.x, kalman.x.y]);
         }
 
-        // println!("measurement X;measurement Y;prediction X;prediction Y");
+        // println!("measurement X;measurement Y;prediction X;prediction Y;updated X;updated Y");
         // for i in 0..xs.len() {
-        //     println!("{};{};{};{}", xs[i], ys[i], predictions[i][0], predictions[i][1]);
+        //     println!("{};{};{};{};{};{}", xs[i], ys[i], predictions[i][0], predictions[i][1], updated_states[i][0], updated_states[i][1]);
         // }
     }
 }
