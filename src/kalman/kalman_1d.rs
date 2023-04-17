@@ -55,6 +55,7 @@ impl Kalman1D {
     /// Basic usage:
     /// 
     /// ```
+    /// use kalman_rust::kalman::Kalman1D;
     /// let dt = 0.1; // Single cycle time
     /// let u = 2.0; // Control input
     /// let std_dev_a = 0.25; // Standart deviation of acceleration
@@ -106,8 +107,14 @@ impl Kalman1D {
     /// Basic usage:
     /// 
     /// ```
+    /// use kalman_rust::kalman::Kalman1D;
+    /// let dt = 0.1; // Single cycle time
+    /// let u = 2.0; // Control input
+    /// let std_dev_a = 0.25; // Standart deviation of acceleration
+    /// let std_dev_m = 1.2; // Standart deviation of measurement
     /// let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
-    /// for x in measurements {
+    /// let measurements = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+    /// for x in measurements.iter() {
     ///     // get measurement
     ///     kalman.predict();
     ///     // then do update 
@@ -125,7 +132,13 @@ impl Kalman1D {
     /// Basic usage:
     /// 
     /// ```
+    /// use kalman_rust::kalman::Kalman1D;
+    /// let dt = 0.1; // Single cycle time
+    /// let u = 2.0; // Control input
+    /// let std_dev_a = 0.25; // Standart deviation of acceleration
+    /// let std_dev_m = 1.2; // Standart deviation of measurement
     /// let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
+    /// let measurements = vec![1.0, 2.0, 3.0, 4.0, 5.0];
     /// for x in measurements {
     ///     kalman.predict();
     ///     kalman.update(x).unwrap(); // assuming that there is noise in measurement
