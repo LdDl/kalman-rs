@@ -130,7 +130,7 @@ impl Kalman2D {
     /// and the filter needs to estimate the position of the object from scratch, which can result in some initial inaccuracies.
     /// On the other hand, initializing the first state vector with the actual observed coordinates of the object can provide
     /// a more accurate estimate from the beginning, which can improve the overall tracking performance of the filter
-    //
+    ///
     /// 
     /// Basic usage:
     /// 
@@ -142,9 +142,9 @@ impl Kalman2D {
     /// let std_dev_a = 0.25; // Standart deviation of acceleration
     /// let std_dev_mx = 1.2; // Standart deviation of measurement for X
     /// let std_dev_my = 1.2; // Standart deviation of measurement for Y
-    /// let x = 1.0; // Initial state for X
-    /// let y = 5.0; // Initial state for Y
-    /// let mut kalman = Kalman2D::new_with_state(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my, x, y);
+    /// let ix = 1.0; // Initial state for X
+    /// let iy = 5.0; // Initial state for Y
+    /// let mut kalman = Kalman2D::new_with_state(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my, ix, iy);
     /// ```
     pub fn new_with_state(dt: f32, ux: f32, uy: f32, std_dev_a: f32, std_dev_mx: f32, std_dev_my: f32, x: f32, y: f32) -> Self {
         Kalman2D {
@@ -266,12 +266,18 @@ impl Kalman2D {
         self.P = (I - gain*self.H)*self.P;
         Ok(())
     }
+    /// Returns the current state (only X and Y, not Vx and Vy)
+    pub fn get_state(&self) -> (f32, f32) {
+        (self.x[0], self.x[1])
+    }
+    /// Returns the current state (both (X, Y) and (Vx, Vy))
+    pub fn get_vector_tate(&self) -> nalgebra::SVector::<f32, 4> {
+        self.x
+    }
 }
 
 mod tests {
     use super::*;
-    use rand::prelude::*;
-    use rand::distributions::Standard;
     #[test]
     fn test_2d_kalman() {
         let dt = 0.04; // 1/25 = 25 fps - just an example
@@ -285,9 +291,11 @@ mod tests {
         // Note: in this example Y-axis going from up to down
         let xs = vec![311, 312, 313, 311, 311, 312, 312, 313, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 311, 311, 311, 311, 311, 310, 311, 311, 311, 310, 310, 308, 307, 308, 308, 308, 307, 307, 307, 308, 307, 307, 307, 307, 307, 308, 307, 309, 306, 307, 306, 307, 308, 306, 306, 306, 305, 307, 307, 307, 306, 306, 306, 307, 307, 308, 307, 307, 308, 307, 306, 308, 309, 309, 309, 309, 308, 309, 309, 309, 308, 311, 311, 307, 311, 307, 313, 311, 307, 311, 311, 306, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312, 312];
         let ys = vec![5, 6, 8, 10, 11, 12, 12, 13, 16, 16, 18, 18, 19, 19, 20, 20, 22, 22, 23, 23, 24, 24, 28, 30, 32, 35, 39, 42, 44, 46, 56, 58, 70, 60, 52, 64, 51, 70, 70, 70, 66, 83, 80, 85, 80, 98, 79, 98, 61, 94, 101, 94, 104, 94, 107, 112, 108, 108, 109, 109, 121, 108, 108, 120, 122, 122, 128, 130, 122, 140, 122, 122, 140, 122, 134, 141, 136, 136, 154, 155, 155, 150, 161, 162, 169, 171, 181, 175, 175, 163, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178];
-        
-        let mut kalman = Kalman2D::new(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my);
+
         // Assume that initial X,Y coordinates match the first measurement
+        let ix = xs[0] as f32; // Initial state for X
+        let iy = ys[0] as f32; // Initial state for Y
+        let mut kalman = Kalman2D::new_with_state(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my, ix, iy);
         kalman.x.x = xs[0] as f32;
         kalman.x.y = ys[0] as f32;
         let mut predictions: Vec<Vec<f32>> = vec![];
@@ -299,11 +307,13 @@ mod tests {
 
             // Predict stage
             kalman.predict();
-            predictions.push(vec![kalman.x.x, kalman.x.y]);
+            let state = kalman.get_vector_tate();
+            predictions.push(vec![state.x, state.y]);
 
             // Update stage
             kalman.update(mx, my).unwrap();
-            updated_states.push(vec![kalman.x.x, kalman.x.y]);
+            let updated_state = kalman.get_vector_tate();
+            updated_states.push(vec![updated_state.x, updated_state.y]);
         }
 
         // println!("measurement X;measurement Y;prediction X;prediction Y;updated X;updated Y");

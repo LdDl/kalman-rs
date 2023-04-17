@@ -159,7 +159,14 @@ impl Kalman1D {
         self.P = (I - gain*self.H)*self.P;
         Ok(())
     }
-    
+    /// Returns the current state (only X, not Vx)
+    pub fn get_state(&self) -> f32 {
+        self.x[0]
+    }
+    /// Returns the current state (both X and Vx)
+    pub fn get_vector_tate(&self) -> nalgebra::SVector::<f32, 2> {
+        self.x
+    }
 }
 
 fn float_loop(start: f32, threshold: f32, step_size: f32) -> impl Iterator<Item = f32> {
@@ -186,7 +193,6 @@ mod tests {
         // let t:  = (0..100).map(|t| t as f32).collect();
         let track = t.map(|t| dt*(t*t - t));
 
-
         let mut kalman = Kalman1D::new(dt, u, std_dev_a, std_dev_m);
         let mut measurement: Vec<f32> = vec![];
         let mut predictions: Vec<f32>= vec![];
@@ -199,7 +205,8 @@ mod tests {
 
             // Predict stage
             kalman.predict();
-            predictions.push(kalman.x.x);
+            let state = kalman.get_vector_tate();
+            predictions.push(state.x);
 
             // Update stage
             kalman.update(z).unwrap();
