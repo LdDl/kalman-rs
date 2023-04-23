@@ -10,7 +10,7 @@ In this repository Hybrid Kalman filter is implemented considering continuous-ti
 
 - [Main algorithm and equations](#main-algorithm-and-equations)
 - [How to use](#how-to-use)
-- [Refrences](#Refrences)
+- [References](#References)
 
 ## Main algorithm and equations
 
@@ -505,7 +505,7 @@ fn main() {
 }
 ```
 
-## Refrences
+## References
 * [Greg Welch and Gary Bishop, ‘An Introduction to the Kalman Filter’, July 24, 2006](https://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf)
 * [Introducion to the Kalman Filter by Alex Becker](https://www.kalmanfilter.net/default.aspx)
 * [Kalman filter on wikipedia](https://en.wikipedia.org/wiki/Kalman_filter)
