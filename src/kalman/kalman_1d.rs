@@ -23,7 +23,7 @@ const I: nalgebra::SMatrix::<f32, 2, 2> = nalgebra::SMatrix::<f32, 2, 2>::new(
 );
 
 /// Implementation of Discrete Kalman filter for case when there is only on variable X.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Kalman1D {
     // Single cycle time
     dt: f32,

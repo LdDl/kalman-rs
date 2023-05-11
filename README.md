@@ -453,7 +453,7 @@ Add dependency to your Cargo.toml file
 
 [dependencies]
 ...
-kalman-rust = "0.2.1"
+kalman-rust = "0.2.2"
 ...
 ```
 
