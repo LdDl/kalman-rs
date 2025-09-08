@@ -164,7 +164,7 @@ impl Kalman1D {
         self.x[0]
     }
     /// Returns the current state (both X and Vx)
-    pub fn get_vector_tate(&self) -> nalgebra::SVector::<f32, 2> {
+    pub fn get_vector_state(&self) -> nalgebra::SVector::<f32, 2> {
         self.x
     }
 }
@@ -205,7 +205,7 @@ mod tests {
 
             // Predict stage
             kalman.predict();
-            let state = kalman.get_vector_tate();
+            let state = kalman.get_vector_state();
             predictions.push(state.x);
 
             // Update stage

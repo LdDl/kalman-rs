@@ -489,12 +489,12 @@ fn main() {
 
         // Predict stage
         kalman.predict();
-        let state = kalman.get_vector_tate();
+        let state = kalman.get_vector_state();
         predictions.push(vec![state.x, state.y]);
 
         // Update stage
         kalman.update(mx, my).unwrap();
-        let updated_state = kalman.get_vector_tate();
+        let updated_state = kalman.get_vector_state();
         updated_states.push(vec![updated_state.x, updated_state.y]);
     }
     
