@@ -283,6 +283,19 @@ impl Kalman2D {
     pub fn get_state(&self) -> (f32, f32) {
         (self.x[0], self.x[1])
     }
+    /// Returns the current velocity (only Vx and Vy, not X and Y)
+    pub fn get_velocity(&self) -> (f32, f32) {
+        (self.x[2], self.x[3])
+    }
+    /// Returns prediction without mutating the state vector and the error covariance matrix
+    pub fn get_predicted_position(&self) -> (f32, f32) {
+        let x_pred = (self.A * self.x) + (self.B * self.u);
+        (x_pred[0], x_pred[1])
+    }
+    /// Returns position uncertainty from P matrix
+    pub fn get_position_uncertainty(&self) -> f32 {
+        (self.P[(0, 0)].powi(2) + self.P[(1, 1)].powi(2)).sqrt()
+    }
     /// Returns the current state (both (X, Y) and (Vx, Vy))
     pub fn get_vector_state(&self) -> nalgebra::SVector<f32, 4> {
         self.x
