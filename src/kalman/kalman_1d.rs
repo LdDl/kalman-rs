@@ -180,7 +180,7 @@ fn float_loop(start: f32, threshold: f32, step_size: f32) -> impl Iterator<Item 
 mod tests {
     use super::*;
     use rand::prelude::*;
-    use rand::distributions::Standard;
+    use rand_distr::StandardNormal;
     #[test]
     fn test_1d_kalman() {
         // Just and adoptation of https://machinelearningspace.com/object-tracking-python/
@@ -197,9 +197,8 @@ mod tests {
         let mut measurement: Vec<f32> = vec![];
         let mut predictions: Vec<f32>= vec![];
         for (t, x) in t.iter().zip(track.iter()) {
-
             // Add some noise to perfect track
-            let v: f32 = StdRng::from_entropy().sample::<f32, Standard>(Standard) * (50.0+50.0) - 50.0; // Generate noise in [-50, 50)
+            let v: f32 = StdRng::from_os_rng().sample::<f32, StandardNormal>(StandardNormal) * (50.0+50.0) - 50.0; // Generate noise in [-50, 50)
             let z = kalman.H.x * x + v;
             measurement.push(z);
 

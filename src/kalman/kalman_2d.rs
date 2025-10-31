@@ -336,8 +336,7 @@ mod tests {
         // Assume that initial X,Y coordinates match the first measurement
         let ix = xs[0] as f32; // Initial state for X
         let iy = ys[0] as f32; // Initial state for Y
-        let mut kalman =
-            Kalman2D::new_with_state(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my, ix, iy);
+        let mut kalman = Kalman2D::new_with_state(dt, ux, uy, std_dev_a, std_dev_mx, std_dev_my, ix, iy);
         kalman.x.x = xs[0] as f32;
         kalman.x.y = ys[0] as f32;
         let mut predictions: Vec<Vec<f32>> = vec![];
