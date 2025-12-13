@@ -532,16 +532,16 @@ mod tests {
         assert!((final_w - last_m_w).abs() < 5.0, "Final w too far from measurement");
         assert!((final_h - last_m_h).abs() < 5.0, "Final h too far from measurement");
 
-        println!("measurement cx;measurement cy;measurement w;measurement h;prediction cx;prediction cy;prediction w;prediction h;updated cx;updated cy;updated w;updated h");
-        for i in 0..xs.len() {
-            let (p_cx, p_cy, p_w, p_h) = predictions[i];
-            let (u_cx, u_cy, u_w, u_h) = updated_states[i];
-            println!("{};{};{};{};{};{};{};{};{};{};{};{}",
-                xs[i], ys[i], ws[i], hs[i],
-                p_cx, p_cy, p_w, p_h,
-                u_cx, u_cy, u_w, u_h
-            );
-        }
+        // println!("measurement cx;measurement cy;measurement w;measurement h;prediction cx;prediction cy;prediction w;prediction h;updated cx;updated cy;updated w;updated h");
+        // for i in 0..xs.len() {
+        //     let (p_cx, p_cy, p_w, p_h) = predictions[i];
+        //     let (u_cx, u_cy, u_w, u_h) = updated_states[i];
+        //     println!("{};{};{};{};{};{};{};{};{};{};{};{}",
+        //         xs[i], ys[i], ws[i], hs[i],
+        //         p_cx, p_cy, p_w, p_h,
+        //         u_cx, u_cy, u_w, u_h
+        //     );
+        // }
     }
 
     #[test]
