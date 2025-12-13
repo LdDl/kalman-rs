@@ -9,6 +9,9 @@ In this repository Hybrid Kalman filter is implemented considering continuous-ti
 ## Table of Contents
 
 - [Main algorithm and equations](#main-algorithm-and-equations)
+- [1-D Kalman filter](#1-d-kalman-filter)
+- [2-D Kalman filter](#2-d-kalman-filter)
+- [Bounding Box Kalman filter (KalmanBBox)](#bounding-box-kalman-filter-kalmanbbox)
 - [How to use](#how-to-use)
 - [References](#References)
 
@@ -436,6 +439,340 @@ How exported chart does look like:
 
 <img src="images/kalman-2d.png" width="720">
 
+## Bounding Box Kalman filter (KalmanBBox)
+
+For multi-object tracking (MOT) purposes, tracking only center position $(x, y)$ is insufficient. Objects can change size due to movement towards/away from camera, aspect ratio variations, or partial occlusions. We extend the 2-D Kalman filter to track bounding box parameters: center coordinates $(c_x, c_y)$, width $w$, and height $h$.
+
+Considering constant velocity model for both position and size, let's write down the equations.
+
+For center position (same physical model as in $(13)$ - $(14)$):
+
+$${c_x}_ {k} = {c_x}_ {k-1} + {c'_x}_ {k-1}\Delta t + \frac{{c''_x}_ {k-1}(\Delta t^2)}{2} \tag{42}$$
+
+$${c_y}_ {k} = {c_y}_ {k-1} + {c'_y}_ {k-1}\Delta t + \frac{{c''_y}_ {k-1}(\Delta t^2)}{2} \tag{43}$$
+
+For bounding box dimensions (analogous dynamics):
+
+$$w_{k} = w_{k-1} + w'_ {k-1}\Delta t + \frac{w''_ {k-1}(\Delta t^2)}{2} \tag{44}$$
+
+$$h_{k} = h_{k-1} + h'_ {k-1}\Delta t + \frac{h''_ {k-1}(\Delta t^2)}{2} \tag{45}$$
+
+$$\text{, where $w'$ and $h'$ - rate of change of width and height respectively}$$
+
+And for velocities:
+
+$${c'_x}_ {k} = {c'_x}_ {k-1} + {c''_x}_ {k-1}\Delta t \tag{46}$$
+
+$${c'_y}_ {k} = {c'_y}_ {k-1} + {c''_y}_ {k-1}\Delta t \tag{47}$$
+
+$$w'_ {k} = w'_ {k-1} + w''_ {k-1}\Delta t \tag{48}$$
+
+$$h'_ {k} = h'_ {k-1} + h''_ {k-1}\Delta t \tag{49}$$
+
+State vector $\chi_{k}$ for bounding box:
+
+$$\chi_{k} = \begin{bmatrix}
+{c_x}_ {k} \\
+{c_y}_ {k} \\
+w_{k} \\
+h_{k} \\
+{c'_x}_ {k} \\
+{c'_y}_ {k} \\
+w'_ {k} \\
+h'_ {k}
+\end{bmatrix} = \begin{bmatrix}
+{c_x}_ {k-1} + {c'_x}_ {k-1}\Delta t + \frac{{c''_x}_ {k-1}(\Delta t^2)}{2} \\
+{c_y}_ {k-1} + {c'_y}_ {k-1}\Delta t + \frac{{c''_y}_ {k-1}(\Delta t^2)}{2} \\
+w_{k-1} + w'_ {k-1}\Delta t + \frac{w''_ {k-1}(\Delta t^2)}{2} \\
+h_{k-1} + h'_ {k-1}\Delta t + \frac{h''_ {k-1}(\Delta t^2)}{2} \\
+{c'_x}_ {k-1} + {c''_x}_ {k-1}\Delta t \\
+{c'_y}_ {k-1} + {c''_y}_ {k-1}\Delta t \\
+w'_ {k-1} + w''_ {k-1}\Delta t \\
+h'_ {k-1} + h''_ {k-1}\Delta t
+\end{bmatrix} \tag{50}$$
+
+Matrix form of $\chi_{k}$:
+
+$$\chi_{k} = \begin{bmatrix}
+1 & 0 & 0 & 0 & \Delta t & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 & 0 & \Delta t & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 & \Delta t & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 & 0 & \Delta t \\
+0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 1
+\end{bmatrix} \cdot \chi_{k-1} + \begin{bmatrix}
+\frac{\Delta t^2}{2} & 0 & 0 & 0 \\
+0 & \frac{\Delta t^2}{2} & 0 & 0 \\
+0 & 0 & \frac{\Delta t^2}{2} & 0 \\
+0 & 0 & 0 & \frac{\Delta t^2}{2} \\
+\Delta t & 0 & 0 & 0 \\
+0 & \Delta t & 0 & 0 \\
+0 & 0 & \Delta t & 0 \\
+0 & 0 & 0 & \Delta t
+\end{bmatrix} \cdot a_{k-1} \tag{51}$$
+
+$$\text{, where } a_{k-1} = \begin{bmatrix}
+a_{{c_x}_ {k-1}} \\
+a_{{c_y}_ {k-1}} \\
+a_{w_{k-1}} \\
+a_{h_{k-1}}
+\end{bmatrix} \text{ - acceleration vector} \tag{52}$$
+
+Taking close look on $(51)$ and $(1)$ we can write transition matrix $A$ and control input matrix $B$ as follows:
+
+$$A = \begin{bmatrix}
+1 & 0 & 0 & 0 & \Delta t & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 & 0 & \Delta t & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 & \Delta t & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 & 0 & \Delta t \\
+0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 1
+\end{bmatrix} \tag{53}$$
+
+$$B = \begin{bmatrix}
+\frac{\Delta t^2}{2} & 0 & 0 & 0 \\
+0 & \frac{\Delta t^2}{2} & 0 & 0 \\
+0 & 0 & \frac{\Delta t^2}{2} & 0 \\
+0 & 0 & 0 & \frac{\Delta t^2}{2} \\
+\Delta t & 0 & 0 & 0 \\
+0 & \Delta t & 0 & 0 \\
+0 & 0 & \Delta t & 0 \\
+0 & 0 & 0 & \Delta t
+\end{bmatrix} \tag{54}$$
+
+Let's find transformation matrix $H$. We observe only bounding box parameters $(c_x, c_y, w, h)$, not their velocities. According to $(2)$:
+
+$$z_{k} = H \cdot \chi_{k} + v_{k} = \begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 & 0 & 0
+\end{bmatrix} \cdot \begin{bmatrix}
+{c_x}_ {k} \\
+{c_y}_ {k} \\
+w_{k} \\
+h_{k} \\
+{c'_x}_ {k} \\
+{c'_y}_ {k} \\
+w'_ {k} \\
+h'_ {k}
+\end{bmatrix} + v_{k} \tag{55}$$
+
+$$H = \begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 & 0 & 0
+\end{bmatrix} \tag{56}$$
+
+Process noise covariance matrix $Q$:
+
+$$Q = \begin{matrix}
+ & \begin{matrix}c_x & c_y & w & h & c'_x & c'_y & w' & h'\end{matrix} \\
+\begin{matrix}c_x \\
+c_y \\
+w \\
+h \\
+c'_x \\
+c'_y \\
+w' \\
+h'\end{matrix} &
+  \begin{bmatrix}
+  \sigma^2_{c_x} & 0 & 0 & 0 & \sigma_{c_x} \sigma_{c'_x} & 0 & 0 & 0 \\
+  0 & \sigma^2_{c_y} & 0 & 0 & 0 & \sigma_{c_y} \sigma_{c'_y} & 0 & 0 \\
+  0 & 0 & \sigma^2_{w} & 0 & 0 & 0 & \sigma_{w} \sigma_{w'} & 0 \\
+  0 & 0 & 0 & \sigma^2_{h} & 0 & 0 & 0 & \sigma_{h} \sigma_{h'} \\
+  \sigma_{c'_x} \sigma_{c_x} & 0 & 0 & 0 & \sigma^2_{c'_x} & 0 & 0 & 0 \\
+  0 & \sigma_{c'_y} \sigma_{c_y} & 0 & 0 & 0 & \sigma^2_{c'_y} & 0 & 0 \\
+  0 & 0 & \sigma_{w'} \sigma_{w} & 0 & 0 & 0 & \sigma^2_{w'} & 0 \\
+  0 & 0 & 0 & \sigma_{h'} \sigma_{h} & 0 & 0 & 0 & \sigma^2_{h'}
+  \end{bmatrix}
+ \\\\
+\end{matrix} \tag{57}$$
+
+$$\text{, where} $$
+
+$$ \text{$\sigma_{c_x}$, $\sigma_{c_y}$ - standart deviation of position for center coordinates} $$
+
+$$ \text{$\sigma_{w}$, $\sigma_{h}$ - standart deviation of position for width and height} $$
+
+$$ \text{$\sigma_{c'_x}$, $\sigma_{c'_y}$ - standart deviation of velocity for center coordinates} $$
+
+$$ \text{$\sigma_{w'}$, $\sigma_{h'}$ - standart deviation of velocity for width and height} $$
+
+Since we know about $(42)$ - $(45)$ we can define standart deviations as:
+
+$$ \sigma_{c_x} = \sigma_{a_{c_x}} \frac{\Delta t^2}{2}, \quad \sigma_{c_y} = \sigma_{a_{c_y}} \frac{\Delta t^2}{2} \tag{58}$$
+
+$$ \sigma_{w} = \sigma_{a_{w}} \frac{\Delta t^2}{2}, \quad \sigma_{h} = \sigma_{a_{h}} \frac{\Delta t^2}{2} \tag{59}$$
+
+$$ \sigma_{c'_x} = \sigma_{a_{c_x}} \Delta t, \quad \sigma_{c'_y} = \sigma_{a_{c_y}} \Delta t \tag{60}$$
+
+$$ \sigma_{w'} = \sigma_{a_{w}} \Delta t, \quad \sigma_{h'} = \sigma_{a_{h}} \Delta t \tag{61}$$
+
+$$\text{, where $\sigma_{a_{c_x}}$, $\sigma_{a_{c_y}}$, $\sigma_{a_{w}}$, $\sigma_{a_{h}}$ - standart deviation of acceleration (tuned values)} $$
+
+Assuming uniform acceleration noise $\sigma_{a}$ for all components, process noise covariance matrix $Q$ could be defined as:
+
+$$ Q = \begin{bmatrix}
+\frac{\Delta t^4}{4} & 0 & 0 & 0 & \frac{\Delta t^3}{2} & 0 & 0 & 0 \\
+0 & \frac{\Delta t^4}{4} & 0 & 0 & 0 & \frac{\Delta t^3}{2} & 0 & 0 \\
+0 & 0 & \frac{\Delta t^4}{4} & 0 & 0 & 0 & \frac{\Delta t^3}{2} & 0 \\
+0 & 0 & 0 & \frac{\Delta t^4}{4} & 0 & 0 & 0 & \frac{\Delta t^3}{2} \\
+\frac{\Delta t^3}{2} & 0 & 0 & 0 & \Delta t^2 & 0 & 0 & 0 \\
+0 & \frac{\Delta t^3}{2} & 0 & 0 & 0 & \Delta t^2 & 0 & 0 \\
+0 & 0 & \frac{\Delta t^3}{2} & 0 & 0 & 0 & \Delta t^2 & 0 \\
+0 & 0 & 0 & \frac{\Delta t^3}{2} & 0 & 0 & 0 & \Delta t^2
+\end{bmatrix} \sigma^2_{a} \tag{62}$$
+
+Covariance of measurement noise $R$ is matrix of size $4 \times 4$ (since there are four observed components - $c_x$, $c_y$, $w$, $h$) and it is defined as variance of the measurement noise:
+
+$$R = \begin{matrix}
+\begin{matrix}& c_x & c_y & w & h\end{matrix} \\
+\begin{matrix}c_x \\
+c_y \\
+w \\
+h \end{matrix}
+  \begin{bmatrix}
+  \sigma^2_{z_{c_x}} & 0 & 0 & 0 \\
+  0 & \sigma^2_{z_{c_y}} & 0 & 0 \\
+  0 & 0 & \sigma^2_{z_w} & 0 \\
+  0 & 0 & 0 & \sigma^2_{z_h}
+  \end{bmatrix}
+ \\\\
+\end{matrix} = \begin{bmatrix}
+  \sigma^2_{z_{c_x}} & 0 & 0 & 0 \\
+  0 & \sigma^2_{z_{c_y}} & 0 & 0 \\
+  0 & 0 & \sigma^2_{z_w} & 0 \\
+  0 & 0 & 0 & \sigma^2_{z_h}
+  \end{bmatrix} \tag{63}$$
+
+### Data Association (Mahalanobis Distance)
+
+For multi-object tracking, we need to associate detections with existing tracks. The Mahalanobis distance accounts for prediction uncertainty unlike simple Euclidean distance.
+
+The innovation (measurement residual) is defined as:
+
+$$y_{k} = z_{k} - H \cdot \hat{\chi}^-_{k} \tag{64}$$
+
+$$\text{, where $z_{k}$ - actual measurement, $H \cdot \hat{\chi}^-_{k}$ - predicted measurement}$$
+
+The innovation covariance matrix $S$ (also called residual covariance):
+
+$$S_{k} = H \cdot P^-_{k} \cdot H^{T} + R \tag{65}$$
+
+$$\text{, where $P^-_{k}$ - predicted error covariance, $R$ - measurement noise covariance}$$
+
+The squared Mahalanobis distance between measurement $z$ and predicted state:
+
+$$d^2_M = y^{T}_{k} \cdot S^{-1}_{k} \cdot y_{k} = (z_{k} - H \cdot \hat{\chi}^-_{k})^{T} \cdot S^{-1}_{k} \cdot (z_{k} - H \cdot \hat{\chi}^-_{k}) \tag{66}$$
+
+The Mahalanobis distance:
+
+$$d_M = \sqrt{d^2_M} \tag{67}$$
+
+### Gating
+
+The squared Mahalanobis distance follows a chi-squared distribution with $m$ degrees of freedom (where $m$ is measurement dimension, $m=4$ for bounding box):
+
+$$d^2_M \sim \chi^2(m) \tag{68}$$
+
+Gating threshold $\tau$ can be set using chi-squared inverse cumulative distribution function:
+
+$$\tau = \chi^2_{inv}(\alpha, m) \tag{69}$$
+
+$$\text{, where $\alpha$ - confidence level (e.g., 0.95), $m$ - degrees of freedom}$$
+
+Common thresholds for $\alpha = 0.95$:
+
+| Degrees of freedom $m$ | Threshold $\tau$ |
+|------------------------|------------------|
+| 2 (position only) | 5.991 |
+| 4 (bounding box) | 9.488 |
+
+A detection passes the gate (can be associated with track) if:
+
+$$d^2_M < \tau \tag{70}$$
+
+Rust implementation is [here](./src/kalman/kalman_bbox.rs#L23)
+
+Example of usage:
+```rust
+    let dt = 0.04; // 1/25 = 25 fps - just an example
+    let u_cx = 1.0;
+    let u_cy = 1.0;
+    let u_w = 0.0;  // Usually no control input for size
+    let u_h = 0.0;
+    let std_dev_a = 2.0;
+    let std_dev_m_cx = 0.1;
+    let std_dev_m_cy = 0.1;
+    let std_dev_m_w = 0.1;
+    let std_dev_m_h = 0.1;
+
+    // Sample measurements (center_x, center_y, width, height)
+    let measurements = vec![
+        (100.0, 50.0, 40.0, 80.0),
+        (102.0, 52.0, 41.0, 81.0),
+        (105.0, 55.0, 42.0, 82.0),
+        // ... more measurements
+    ];
+
+    // Assume that initial state matches the first measurement
+    let (i_cx, i_cy, i_w, i_h) = measurements[0];
+    let mut kalman = KalmanBBox::new_with_state(
+        dt, u_cx, u_cy, u_w, u_h,
+        std_dev_a,
+        std_dev_m_cx, std_dev_m_cy, std_dev_m_w, std_dev_m_h,
+        i_cx, i_cy, i_w, i_h
+    );
+
+    let mut predictions: Vec<(f32, f32, f32, f32)> = vec![];
+    let mut updated_states: Vec<(f32, f32, f32, f32)> = vec![];
+
+    for (m_cx, m_cy, m_w, m_h) in measurements.iter() {
+        // Predict stage
+        kalman.predict();
+        predictions.push(kalman.get_state());
+
+        // Update stage
+        kalman.update(*m_cx, *m_cy, *m_w, *m_h).unwrap();
+        updated_states.push(kalman.get_state());
+    }
+
+    println!("measurement cx;measurement cy;measurement w;measurement h;prediction cx;prediction cy;prediction w;prediction h");
+    for (i, (m_cx, m_cy, m_w, m_h)) in measurements.iter().enumerate() {
+        let (p_cx, p_cy, p_w, p_h) = predictions[i];
+        println!("{};{};{};{};{};{};{};{}", m_cx, m_cy, m_w, m_h, p_cx, p_cy, p_w, p_h);
+    }
+```
+
+Example with Mahalanobis distance for data association:
+```rust
+    // After prediction, check if a new detection can be associated
+    let new_detection = (108.0, 58.0, 43.0, 83.0);
+    let (d_cx, d_cy, d_w, d_h) = new_detection;
+
+    // Get squared Mahalanobis distance
+    let mahal_dist_sq = kalman.mahalanobis_distance_squared(d_cx, d_cy, d_w, d_h);
+
+    // Gating threshold for 4 DOF at 95% confidence
+    let threshold = 9.488;
+
+    if mahal_dist_sq < threshold {
+        // Detection passes the gate - can be associated with this track
+        kalman.update(d_cx, d_cy, d_w, d_h).unwrap();
+    } else {
+        // Detection is too far - likely belongs to different object
+    }
+```
+
+How exported chart does look like:
+
+<img src="images/kalman-bbox.png" width="720">
 
 ## 2-D Kalman filter (with acceleration component and no control input)
 
@@ -453,7 +790,7 @@ Add dependency to your Cargo.toml file
 
 [dependencies]
 ...
-kalman-rust = "0.2.2"
+kalman-rust = "0.3.0"
 ...
 ```
 
