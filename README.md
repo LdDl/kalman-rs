@@ -6,6 +6,16 @@ In other words, the purpose of Kalman filter is to predict the next state via us
 
 In this repository Hybrid Kalman filter is implemented considering continuous-time model while discrete-time measurements. See the ref. - https://en.wikipedia.org/wiki/Kalman_filter#Hybrid_Kalman_filter
 
+Kalman 1D            |  Kalman 2D
+:-------------------------:|:-------------------------:
+<img src="images/kalman-1d.png" width="640">  |  <img src="images/kalman-2d.png" width="640">
+
+Kalman BBox |
+:-------------------------:|
+<img src="images/kalman-bbox.png" width="720">  |
+
+<p style="text-align: center;"><i>A showcase how to visualize Kalman filter works</i></p>
+
 ## Table of Contents
 
 - [Main algorithm and equations](#main-algorithm-and-equations)
