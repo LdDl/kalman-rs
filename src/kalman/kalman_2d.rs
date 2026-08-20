@@ -217,6 +217,62 @@ impl Kalman2D {
             x: nalgebra::SVector::<f32, 4>::new(x, y, 0.0, 0.0),
         }
     }
+    /// Rebuilds the time-dependent matrices for a new cycle time.
+    ///
+    /// A discrete Kalman filter is only valid for the sampling interval its
+    /// transition and process-noise matrices were built for. When frames arrive
+    /// unevenly - a dropped frame, a stalled decoder, a variable frame rate -
+    /// keeping the nominal `dt` makes `predict` project the state over the wrong
+    /// interval, and `Q` then understates how much the state could have changed.
+    /// Call this with the real elapsed time before `predict`.
+    ///
+    /// The state vector and the error covariance are deliberately left alone:
+    /// they describe the present estimate, which does not depend on how long the
+    /// next step will be.
+    pub fn set_dt(&mut self, dt: f32) {
+        if dt <= 0.0 || (dt - self.dt).abs() < f32::EPSILON {
+            return;
+        }
+        self.dt = dt;
+        // Ref.: Eq.(31)
+        self.A = nalgebra::SMatrix::<f32, 4, 4>::new(
+            1.0, 0.0, dt, 0.0, 0.0, 1.0, 0.0, dt, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        );
+        // Ref.: Eq.(32)
+        self.B = nalgebra::SMatrix::<f32, 4, 2>::new(
+            0.5 * dt.powi(2),
+            0.0,
+            0.0,
+            0.5 * dt.powi(2),
+            dt,
+            0.0,
+            0.0,
+            dt,
+        );
+        // Ref.: Eq.(40)
+        self.Q = nalgebra::SMatrix::<f32, 4, 4>::new(
+            0.25 * dt.powi(4),
+            0.0,
+            0.5 * dt.powi(3),
+            0.0,
+            0.0,
+            0.25 * dt.powi(4),
+            0.0,
+            0.5 * dt.powi(3),
+            0.5 * dt.powi(3),
+            0.0,
+            dt.powi(2),
+            0.0,
+            0.0,
+            0.5 * dt.powi(3),
+            0.0,
+            dt.powi(2),
+        ) * self.std_dev_a.powi(2);
+    }
+    /// Returns the cycle time the filter is currently built for
+    pub fn get_dt(&self) -> f32 {
+        self.dt
+    }
     /// Projects the state and the error covariance ahead
     /// Mutates the state vector and the error covariance matrix
     ///

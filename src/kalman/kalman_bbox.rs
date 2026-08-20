@@ -302,6 +302,58 @@ impl KalmanBBox {
     ///     // then do update
     /// }
     /// ```
+    /// Rebuilds the time-dependent matrices for a new cycle time.
+    ///
+    /// See `Kalman2D::set_dt` for the reasoning: a discrete filter is only valid
+    /// for the sampling interval its `A` and `Q` were built for, so an uneven
+    /// frame arrival has to be fed in here before `predict`.
+    pub fn set_dt(&mut self, dt: f32) {
+        if dt <= 0.0 || (dt - self.dt).abs() < f32::EPSILON {
+            return;
+        }
+        self.dt = dt;
+        let dt2 = dt * dt;
+        let dt3 = dt2 * dt;
+        let dt4 = dt3 * dt;
+        let std_dev_a2 = self.std_dev_a * self.std_dev_a;
+        // Ref.: Eq.(53)
+        self.A = nalgebra::SMatrix::<f32, 8, 8>::from_row_slice(&[
+            1.0, 0.0, 0.0, 0.0, dt, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0, 0.0, dt, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 0.0, 0.0, dt, 0.0,
+            0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, dt,
+            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        ]);
+        // Ref.: Eq.(54)
+        self.B = nalgebra::SMatrix::<f32, 8, 4>::from_row_slice(&[
+            0.5 * dt2, 0.0, 0.0, 0.0,
+            0.0, 0.5 * dt2, 0.0, 0.0,
+            0.0, 0.0, 0.5 * dt2, 0.0,
+            0.0, 0.0, 0.0, 0.5 * dt2,
+            dt, 0.0, 0.0, 0.0,
+            0.0, dt, 0.0, 0.0,
+            0.0, 0.0, dt, 0.0,
+            0.0, 0.0, 0.0, dt,
+        ]);
+        // Ref.: Eq.(62)
+        self.Q = nalgebra::SMatrix::<f32, 8, 8>::from_row_slice(&[
+            0.25 * dt4 * std_dev_a2, 0.0, 0.0, 0.0, 0.5 * dt3 * std_dev_a2, 0.0, 0.0, 0.0,
+            0.0, 0.25 * dt4 * std_dev_a2, 0.0, 0.0, 0.0, 0.5 * dt3 * std_dev_a2, 0.0, 0.0,
+            0.0, 0.0, 0.25 * dt4 * std_dev_a2, 0.0, 0.0, 0.0, 0.5 * dt3 * std_dev_a2, 0.0,
+            0.0, 0.0, 0.0, 0.25 * dt4 * std_dev_a2, 0.0, 0.0, 0.0, 0.5 * dt3 * std_dev_a2,
+            0.5 * dt3 * std_dev_a2, 0.0, 0.0, 0.0, dt2 * std_dev_a2, 0.0, 0.0, 0.0,
+            0.0, 0.5 * dt3 * std_dev_a2, 0.0, 0.0, 0.0, dt2 * std_dev_a2, 0.0, 0.0,
+            0.0, 0.0, 0.5 * dt3 * std_dev_a2, 0.0, 0.0, 0.0, dt2 * std_dev_a2, 0.0,
+            0.0, 0.0, 0.0, 0.5 * dt3 * std_dev_a2, 0.0, 0.0, 0.0, dt2 * std_dev_a2,
+        ]);
+    }
+    /// Returns the cycle time the filter is currently built for
+    pub fn get_dt(&self) -> f32 {
+        self.dt
+    }
     pub fn predict(&mut self) {
         // Ref.: Eq.(5)
         self.x = (self.A * self.x) + (self.B * self.u);
